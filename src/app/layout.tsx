@@ -2,6 +2,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import ConvexClientProvider from './ConvexClientProvider';
+import { Toaster } from '@/components/ui/sonner';
 import Header from '@/components/header';
 import './globals.css';
 
@@ -44,6 +45,7 @@ export default function RootLayout({
 
           {/* Routed pages (e.g. chat) */}
           {children}
+          <Toaster richColors position='top-center' />
         </ConvexClientProvider>
       </body>
     </html>

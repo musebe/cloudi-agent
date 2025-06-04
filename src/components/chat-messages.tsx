@@ -1,14 +1,35 @@
 // src/components/chat-messages.tsx
 'use client';
 
+import { useEffect } from 'react';
+import { toast } from 'sonner'; // 🛎️  toast
 import { Card, CardContent } from './ui/card';
 import { HandHelping, HeartIcon, TextIcon, User, Bot } from 'lucide-react';
 import ImageMessage from './image-message';
 import { Message } from '@/types/chat';
 
-
-export default function ChatMessages({ msg }: { msg: Message; index: number }) {
+export default function ChatMessages({
+  msg,
+  index,
+}: {
+  msg: Message;
+  index: number;
+}) {
   const isUser = msg.role === 'user';
+
+  /* ---------- dev logs ---------- */
+  useEffect(() => {
+    if (typeof msg.content === 'string') {
+      console.log('💬 plain text', { index, text: msg.content });
+    } else if ('type' in msg.content && msg.content.type === 'image') {
+      console.log('🖼️ image bubble', { index, from: msg.role });
+    } else if ('toolResults' in msg.content) {
+      console.log('🛠️ tool-result', {
+        index,
+        type: msg.content.toolResults.type,
+      });
+    }
+  }, [msg, index]);
 
   return (
     <div
@@ -33,8 +54,8 @@ export default function ChatMessages({ msg }: { msg: Message; index: number }) {
       <Card
         className={`max-w-[80%] ${
           isUser
-            ? 'bg-amber-50 text-gray-900 rounded-2xl rounded-tr-none'
-            : 'bg-white shadow-lg rounded-2xl rounded-tl-none'
+            ? 'rounded-2xl rounded-tr-none bg-amber-50 text-gray-900'
+            : 'rounded-2xl rounded-tl-none bg-white shadow-lg'
         }`}
       >
         <CardContent className='p-4'>
@@ -57,7 +78,7 @@ export default function ChatMessages({ msg }: { msg: Message; index: number }) {
               if (r.type === 'analyze') {
                 return (
                   <div className='space-y-6'>
-                    <div className='text-base font-medium text-gray-800 leading-relaxed'>
+                    <div className='text-base font-medium leading-relaxed text-gray-800'>
                       {r.formatted}
                     </div>
                     <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
@@ -116,7 +137,9 @@ export default function ChatMessages({ msg }: { msg: Message; index: number }) {
                 );
               }
 
-              /* fallback render */
+              /* fallback */
+              toast.warning('Unknown tool result 🤔', { icon: '❓' });
+              console.warn('❓ unknown tool result', r);
               return (
                 <p className='whitespace-pre-wrap text-xs text-gray-500'>
                   {JSON.stringify(r)}
@@ -129,7 +152,7 @@ export default function ChatMessages({ msg }: { msg: Message; index: number }) {
   );
 }
 
-/* small helper for analyze boxes */
+/* helper for analyze stat boxes */
 function StatBox({
   icon,
   title,
@@ -149,7 +172,7 @@ function StatBox({
 
   return (
     <div className={`rounded-xl border p-4 bg-gradient-to-br ${colors[color]}`}>
-      <h4 className={`mb-2 flex items-center gap-2 font-semibold`}>
+      <h4 className='mb-2 flex items-center gap-2 font-semibold'>
         {icon}
         {title}
       </h4>

@@ -9,6 +9,7 @@
  */
 
 import type * as agent from "../agent.js";
+import type * as images from "../images.js";
 
 import type {
   ApiFromModules,
@@ -26,6 +27,7 @@ import type {
  */
 declare const fullApi: ApiFromModules<{
   agent: typeof agent;
+  images: typeof images;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
 

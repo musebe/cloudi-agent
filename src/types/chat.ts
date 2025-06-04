@@ -62,7 +62,7 @@ export type Message =
         role: Role;
         content: string | { toolResults: ToolResult };
     }
-    | { role: 'user'; content: ImageContent };
+    | { role: 'user' | 'assistant'; content: ImageContent };
 
 /* ------------------------------------------------------------------ *
  * TYPE GUARDS                                                         *
@@ -70,8 +70,9 @@ export type Message =
 
 export const isImageMessage = (
     m: Message,
-): m is { role: 'user'; content: ImageContent } =>
+): m is { role: 'user' | 'assistant'; content: ImageContent } =>
     typeof m.content === 'object' &&
     m.content !== null &&
     'type' in m.content &&
     m.content.type === 'image';
+  
