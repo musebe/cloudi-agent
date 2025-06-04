@@ -18,7 +18,7 @@ export default function Header() {
             <ImageIcon className='h-5 w-5 text-white' />
           </span>
           <span className='bg-gradient-to-r from-amber-700 to-amber-900 bg-clip-text text-xl font-bold text-transparent'>
-            Cloudi-Agent: Your AI Image Assistant
+            Cloudinary_AI_Agent
           </span>
         </Link>
 

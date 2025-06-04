@@ -1,8 +1,7 @@
-// src/components/chat-messages.tsx
 'use client';
 
 import { useEffect } from 'react';
-import { toast } from 'sonner'; // 🛎️  toast
+import { toast } from 'sonner'; // 🛎️ toast
 import { Card, CardContent } from './ui/card';
 import { HandHelping, HeartIcon, TextIcon, User, Bot } from 'lucide-react';
 import ImageMessage from './image-message';
@@ -17,13 +16,15 @@ export default function ChatMessages({
 }) {
   const isUser = msg.role === 'user';
 
-  /* ---------- dev logs ---------- */
+  /* ─────────────── Dev logs ─────────────── */
   useEffect(() => {
     if (typeof msg.content === 'string') {
       console.log('💬 plain text', { index, text: msg.content });
     } else if ('type' in msg.content && msg.content.type === 'image') {
       console.log('🖼️ image bubble', { index, from: msg.role });
     } else if ('toolResults' in msg.content) {
+      // We have explicitly removed the “cloudinaryUrl” case, so this block
+      // will only fire when toolResults.type is “analyze” / “email” / “social” / etc.
       console.log('🛠️ tool-result', {
         index,
         type: msg.content.toolResults.type,
@@ -37,7 +38,7 @@ export default function ChatMessages({
         isUser ? 'flex-row-reverse' : 'flex-row'
       }`}
     >
-      {/* avatar */}
+      {/* ── avatar ───────────────────────────────────────────────────────── */}
       <div
         className={`flex h-8 w-8 items-center justify-center rounded-full ${
           isUser ? 'bg-amber-100' : 'bg-blue-100'
@@ -50,26 +51,26 @@ export default function ChatMessages({
         )}
       </div>
 
-      {/* bubble */}
+      {/* ── bubble (inline-block so it shrink-wraps) ─────────────────────── */}
       <Card
-        className={`max-w-[80%] ${
+        className={`inline-block max-w-[60%] ${
           isUser
             ? 'rounded-2xl rounded-tr-none bg-amber-50 text-gray-900'
             : 'rounded-2xl rounded-tl-none bg-white shadow-lg'
         }`}
       >
         <CardContent className='p-4'>
-          {/* 1. plain string message */}
+          {/* 1) Plain text */}
           {typeof msg.content === 'string' && (
             <p className='whitespace-pre-wrap text-gray-800'>{msg.content}</p>
           )}
 
-          {/* 2. image bubble */}
+          {/* 2) Image bubble */}
           {typeof msg.content === 'object' &&
             'type' in msg.content &&
             msg.content.type === 'image' && <ImageMessage data={msg.content} />}
 
-          {/* 3. tool-result bubble */}
+          {/* 3) Tool‐result (analyze / email / social / generic) */}
           {typeof msg.content === 'object' &&
             'toolResults' in msg.content &&
             (() => {
@@ -137,13 +138,26 @@ export default function ChatMessages({
                 );
               }
 
-              /* fallback */
-              toast.warning('Unknown tool result 🤔', { icon: '❓' });
-              console.warn('❓ unknown tool result', r);
+              if (r.type === 'social') {
+                return (
+                  <div className='space-y-4'>
+                    <p className='font-medium text-gray-800'>
+                      [{r.platform} post suggestion]
+                    </p>
+                    <p className='whitespace-pre-wrap text-gray-700'>
+                      {r.message}
+                    </p>
+                  </div>
+                );
+              }
+
+              // For “tool-result” or any other GenericToolResult
               return (
-                <p className='whitespace-pre-wrap text-xs text-gray-500'>
-                  {JSON.stringify(r)}
-                </p>
+                <div>
+                  <p className='whitespace-pre-wrap text-xs text-gray-500'>
+                    {JSON.stringify(r)}
+                  </p>
+                </div>
               );
             })()}
         </CardContent>
@@ -152,7 +166,7 @@ export default function ChatMessages({
   );
 }
 
-/* helper for analyze stat boxes */
+/* ── helper for analyze stat boxes ────────────────────────────────────── */
 function StatBox({
   icon,
   title,

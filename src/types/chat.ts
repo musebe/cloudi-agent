@@ -39,11 +39,19 @@ export interface GenericToolResult {
     result: unknown;
 }
 
+/* ─────────── CLOUDINARY URL VARIANT ─────────── */
+
+export interface CloudinaryUrlResult {
+    type: 'cloudinaryUrl';
+    url: string;
+}
+
 export type ToolResult =
     | AnalyzeToolResult
     | EmailToolResult
     | SocialToolResult
-    | GenericToolResult;
+    | GenericToolResult
+    | CloudinaryUrlResult;
 
 /* ──────────────── IMAGE CONTENT ──────────────── */
 
@@ -75,4 +83,3 @@ export const isImageMessage = (
     m.content !== null &&
     'type' in m.content &&
     m.content.type === 'image';
-  
