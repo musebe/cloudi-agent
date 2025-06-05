@@ -6,8 +6,8 @@ import { toast } from 'sonner'; // 🛎️ toast
 import { Card, CardContent } from './ui/card';
 import { HandHelping, HeartIcon, TextIcon, User, Bot } from 'lucide-react';
 import ImageMessage from './image-message';
-import TagPills from './TagPills'; // ← import the new TagPills component
-import { Message } from '@/types/chat';
+import TagPills from './TagPills'; // ← your new TagPills component
+import { Message, ToolResult } from '@/types/chat';
 
 export default function ChatMessages({
   msg,
@@ -22,14 +22,19 @@ export default function ChatMessages({
   useEffect(() => {
     if (typeof msg.content === 'string') {
       console.log('💬 plain text', { index, text: msg.content });
-    } else if ('type' in msg.content && msg.content.type === 'image') {
+    } else if (
+      typeof msg.content === 'object' &&
+      'type' in msg.content &&
+      msg.content.type === 'image'
+    ) {
       console.log('🖼️ image bubble', { index, from: msg.role });
-    } else if ('toolResults' in msg.content) {
-      // We have explicitly removed the “cloudinaryUrl” case, so this block
-      // will only fire when toolResults.type is “analyze” / “email” / “social” / etc.
+    } else if (
+      typeof msg.content === 'object' &&
+      'toolResults' in msg.content
+    ) {
       console.log('🛠️ tool-result', {
         index,
-        type: msg.content.toolResults.type,
+        type: (msg.content.toolResults as ToolResult).type,
       });
     }
   }, [msg, index]);
@@ -72,16 +77,16 @@ export default function ChatMessages({
             'type' in msg.content &&
             msg.content.type === 'image' && <ImageMessage data={msg.content} />}
 
-          {/* 3) Tool‐result (analyze / email / social / generic / tagList) */}
+          {/* 3) Tool‐result (analyze / email / social / tagList / generic) */}
           {typeof msg.content === 'object' &&
             'toolResults' in msg.content &&
             (() => {
-              const r = msg.content.toolResults;
+              const r = msg.content.toolResults as ToolResult;
 
-              // ── NEW: If the object has a `tags: string[]` array, treat it as “tagList” ──
-              if (Array.isArray((r as any).tags)) {
-                // Only show the first 10 tags
-                const allTags = (r as any).tags as string[];
+              // ── 3a) New: TagListToolResult ───────────────────────────────────
+              if (r.type === 'tagList') {
+                // `r` is now a TagListToolResult, so `r.tags` is guaranteed to exist
+                const allTags: string[] = r.tags;
                 const firstTen = allTags.slice(0, 10);
 
                 return (
@@ -94,6 +99,7 @@ export default function ChatMessages({
                 );
               }
 
+              // ── 3b) Analyze ───────────────────────────────────────────────────
               if (r.type === 'analyze') {
                 return (
                   <div className='space-y-6'>
@@ -132,6 +138,7 @@ export default function ChatMessages({
                 );
               }
 
+              // ── 3c) Email ─────────────────────────────────────────────────────
               if (r.type === 'email') {
                 return (
                   <div className='space-y-4'>
@@ -156,6 +163,7 @@ export default function ChatMessages({
                 );
               }
 
+              // ── 3d) Social ────────────────────────────────────────────────────
               if (r.type === 'social') {
                 return (
                   <div className='space-y-4'>
@@ -169,7 +177,7 @@ export default function ChatMessages({
                 );
               }
 
-              // For “tool-result” or any other GenericToolResult
+              // ── 3e) Generic “tool-result” ─────────────────────────────────────
               return (
                 <div>
                   <p className='whitespace-pre-wrap text-xs text-gray-500'>

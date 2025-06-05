@@ -28,7 +28,14 @@ export interface SocialToolResult {
     message: string;
 }
 
-/* ──────────────── CATCH-ALL TOOL VARIANT ────────────────
+/* ──────────────── TAGLIST TOOL VARIANT ──────────────── */
+
+export interface TagListToolResult {
+    type: 'tagList';
+    tags: string[];
+}
+
+/* ──────────────── CATCH‐ALL TOOL VARIANT ────────────────
  *  Cloudy / OpenAI function calls come back as
  *  { type: "tool-result", ... } — add a shape for those   */
 export interface GenericToolResult {
@@ -50,6 +57,7 @@ export type ToolResult =
     | AnalyzeToolResult
     | EmailToolResult
     | SocialToolResult
+    | TagListToolResult    // ← newly added
     | GenericToolResult
     | CloudinaryUrlResult;
 
@@ -77,7 +85,7 @@ export type Message =
  * ------------------------------------------------------------------ */
 
 export const isImageMessage = (
-    m: Message,
+    m: Message
 ): m is { role: 'user' | 'assistant'; content: ImageContent } =>
     typeof m.content === 'object' &&
     m.content !== null &&

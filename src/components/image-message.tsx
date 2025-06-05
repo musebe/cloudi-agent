@@ -21,7 +21,11 @@ import { ImageContent } from '@/types/chat';
 export default function ImageMessage({ data }: { data: ImageContent }) {
   const [open, setOpen] = useState(false);
 
-  // Determine thumbnail height to preserve aspect ratio (fallback to square)
+  // Track thumbnail loading / error
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+
+  // Fixed thumbnail width; preserve aspect ratio if possible
   const thumbWidth = 200;
   const thumbHeight =
     data.width && data.height
@@ -40,29 +44,74 @@ export default function ImageMessage({ data }: { data: ImageContent }) {
       });
   };
 
+  const onThumbError = () => {
+    // Cloudinary not ready? Show “Processing…” overlay instead of broken thumbnail
+    setIsLoading(false);
+    setHasError(true);
+  };
+
+  const onThumbLoad = () => {
+    // Once the image loads, hide spinner/overlay
+    setIsLoading(false);
+    setHasError(false);
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      {/* Thumbnail as trigger */}
+      {/* ─────────────────────────────────────────────────────────────────────────────
+          1) Thumbnail (always points at data.url). While loading: spinner; if 404: “Processing…”
+         ───────────────────────────────────────────────────────────────────────────── */}
       <DialogTrigger asChild>
-        <div className='cursor-pointer rounded-lg border bg-gray-50 p-2 shadow-sm hover:bg-gray-100 w-44'>
-          <Image
-            src={data.url}
-            alt='Transformed image thumbnail'
-            width={thumbWidth}
-            height={thumbHeight}
-            className='rounded-md object-cover'
-          />
+        <div className='relative inline-block w-[200px] cursor-pointer'>
+          {/* a) Spinner overlay while loading */}
+          {isLoading && (
+            <div className='absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-white/60'>
+              <div className='animate-spin h-6 w-6 rounded-full border-4 border-gray-300 border-t-gray-600'></div>
+            </div>
+          )}
+
+          {/* b) “Processing…” overlay if the thumbnail fails (e.g. Cloudinary still generating) */}
+          {hasError && (
+            <div className='absolute inset-0 z-10 flex items-center justify-center rounded-lg bg-gray-100 text-sm text-gray-600'>
+              Processing…
+            </div>
+          )}
+
+          {/* c) Actual Next/Image for thumbnail (using data.url) */}
+          {!hasError && (
+            <Image
+              src={data.url}
+              alt='Transformed image thumbnail'
+              width={thumbWidth}
+              height={thumbHeight}
+              className={`rounded-lg object-cover transition-opacity duration-200 ${
+                isLoading ? 'opacity-0' : 'opacity-100'
+              }`}
+              onLoad={onThumbLoad}
+              onError={onThumbError}
+              style={{ width: 'auto', height: 'auto' }}
+            />
+          )}
+
+          {/* d) If in “error” mode, reserve the same space so layout doesn’t shift */}
+          {hasError && (
+            <div
+              style={{
+                width: thumbWidth,
+                height: thumbHeight,
+              }}
+            />
+          )}
         </div>
       </DialogTrigger>
 
-      {/* Full‐size dialog content */}
-      <DialogContent
-        aria-describedby='full-image-description'
-        className='max-w-3xl sm:max-w-4xl'
-      >
+      {/* ─────────────────────────────────────────────────────────────────────────────
+          2) Full‐size dialog content (no aria‐describedBy prop—Shadcn's DialogDescription handles ARIA)
+         ───────────────────────────────────────────────────────────────────────────── */}
+      <DialogContent className='max-w-3xl sm:max-w-4xl'>
         <DialogHeader>
           <DialogTitle>Transformed Image</DialogTitle>
-          <DialogDescription id='full-image-description'>
+          <DialogDescription>
             This dialog shows the full‐size transformed image. You can also copy
             its URL below.
           </DialogDescription>
@@ -78,8 +127,7 @@ export default function ImageMessage({ data }: { data: ImageContent }) {
           />
         </div>
 
-        <DialogFooter className='flex flex-col gap-2'>
-          {/* Copy URL button */}
+        <DialogFooter className='flex flex-col gap-2 mt-4'>
           <Button
             onClick={handleCopy}
             size='sm'
@@ -89,10 +137,8 @@ export default function ImageMessage({ data }: { data: ImageContent }) {
             <ClipboardCopy className='h-4 w-4' />
             Copy Image URL
           </Button>
-
-          {/* Close button */}
           <DialogClose asChild>
-            <button className='mt-1 w-full rounded bg-amber-600 px-4 py-2 text-white hover:bg-amber-700'>
+            <button className='w-full rounded bg-amber-600 px-4 py-2 text-white hover:bg-amber-700'>
               Close
             </button>
           </DialogClose>
