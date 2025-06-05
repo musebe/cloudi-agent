@@ -1,3 +1,4 @@
+// src/components/demo-prompts.tsx
 'use client';
 
 import { JSX, useState } from 'react';
@@ -28,16 +29,36 @@ const DEMO_PROMPTS: Demo[] = [
     icon: <ImageIcon className='h-4 w-4 shrink-0 text-purple-600' />,
   },
   {
-    label: '✨ Generative fill: extend left side with sky',
-    icon: <Sparkles className='h-4 w-4 shrink-0 text-pink-600' />,
-  },
-  {
     label: '🔄 Convert to WebP format',
     icon: <RefreshCcw className='h-4 w-4 shrink-0 text-green-600' />,
   },
   {
     label: '🏷️ Tag and classify this image',
     icon: <Tags className='h-4 w-4 shrink-0 text-orange-600' />,
+  },
+  {
+    label: '✨ Generative Fill: fill missing areas',
+    icon: <Sparkles className='h-4 w-4 shrink-0 text-pink-500' />,
+  },
+  {
+    label: '🌄 Generative Background Replace',
+    icon: <Sparkles className='h-4 w-4 shrink-0 text-indigo-500' />,
+  },
+  {
+    label: '🌈 Generative Recolor',
+    icon: <Sparkles className='h-4 w-4 shrink-0 text-fuchsia-500' />,
+  },
+  {
+    label: '❌ Generative Remove: remove an object',
+    icon: <Sparkles className='h-4 w-4 shrink-0 text-red-500' />,
+  },
+  {
+    label: '🔄 Generative Replace: swap an object',
+    icon: <Sparkles className='h-4 w-4 shrink-0 text-teal-500' />,
+  },
+  {
+    label: '🛠️ Generative Restore: restore image quality',
+    icon: <Sparkles className='h-4 w-4 shrink-0 text-yellow-500' />,
   },
 ];
 

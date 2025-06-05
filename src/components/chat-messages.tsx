@@ -1,3 +1,4 @@
+// src/components/ChatMessages.tsx
 'use client';
 
 import { useEffect } from 'react';
@@ -5,6 +6,7 @@ import { toast } from 'sonner'; // 🛎️ toast
 import { Card, CardContent } from './ui/card';
 import { HandHelping, HeartIcon, TextIcon, User, Bot } from 'lucide-react';
 import ImageMessage from './image-message';
+import TagPills from './TagPills'; // ← import the new TagPills component
 import { Message } from '@/types/chat';
 
 export default function ChatMessages({
@@ -70,11 +72,27 @@ export default function ChatMessages({
             'type' in msg.content &&
             msg.content.type === 'image' && <ImageMessage data={msg.content} />}
 
-          {/* 3) Tool‐result (analyze / email / social / generic) */}
+          {/* 3) Tool‐result (analyze / email / social / generic / tagList) */}
           {typeof msg.content === 'object' &&
             'toolResults' in msg.content &&
             (() => {
               const r = msg.content.toolResults;
+
+              // ── NEW: If the object has a `tags: string[]` array, treat it as “tagList” ──
+              if (Array.isArray((r as any).tags)) {
+                // Only show the first 10 tags
+                const allTags = (r as any).tags as string[];
+                const firstTen = allTags.slice(0, 10);
+
+                return (
+                  <div className='space-y-2'>
+                    <h4 className='text-sm font-semibold text-gray-700'>
+                      Auto‐Generated Tags:
+                    </h4>
+                    <TagPills tags={firstTen} />
+                  </div>
+                );
+              }
 
               if (r.type === 'analyze') {
                 return (
