@@ -1,3 +1,5 @@
+//src/components/thinking-card.tsx
+
 import { Card, CardContent } from './ui/card';
 import { BrainIcon } from 'lucide-react';
 

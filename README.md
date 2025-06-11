@@ -1,36 +1,245 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
+# 🤖 Cloudi-Agent: AI-Powered Image Processing with Next.js, Cloudinary, and Anthropic
 
-First, run the development server:
+> Conversational, prompt-driven image editing in your browser. Powered by Next.js, Cloudinary transformations, and Anthropic's Claude model.
+
+---
+
+## ✨ Overview
+
+**Cloudi-Agent** is an intelligent image transformation chat app built with:
+
+- 🧠 **Anthropic Claude** – Natural, conversational prompt processing
+- ☁️ **Cloudinary** – Real-time image transformations and AI tagging
+- 🧬 **Convex** – Scalable, reactive backend functions and thread storage
+- ⚡ **Next.js 15** – App Router, Server Actions, View Transitions & modern DX
+
+Users upload an image, describe a transformation (like *“remove background and make it square”*), and receive instant, smart visual feedback.
+
+---
+
+## 🖼️ Features
+
+- ✅ Upload or link images
+- 💬 Conversational prompt interface (Claude 3.5)
+- 🛠️ Image tools via Cloudinary:
+  - Resize
+  - Auto-enhance
+  - Format conversion
+  - Background removal
+  - Generative fill / recolor / replace
+  - Auto-tag with AWS Rekognition
+- 🔁 Stores history and image meta with Convex
+- 🌐 Full Next.js 15 stack with edge-optimized routes
+- 🎛️ Custom UI with `shadcn/ui` and Tailwind
+
+---
+
+## 📸 Demo Prompts
+
+Once an image is uploaded, users can try one-click prompts like:
+
+- 🖼️ Auto-enhance this image
+- 🎯 Resize to 1080×1080 square
+- 🪄 Remove background cleanly
+- 🔄 Convert to WebP format
+- 🏷️ Tag and classify this image
+- ✨ Generative Fill / Recolor / Replace / Remove / Restore
+
+---
+
+## 🧠 How It Works
+
+### Agent Setup
+
+- The core AI agent is defined in `convex/agent.ts` using:
+  - `@convex-dev/agent` to manage stateful threads
+  - `@ai-sdk/anthropic` to call Claude models
+  - `tool()` definitions to expose Cloudinary transformations
+
+### Tool Execution
+
+Each tool returns a Cloudinary transformation URL or tag list, e.g.:
+
+```ts
+resizeImage: tool({
+  parameters: z.object({
+    publicId: z.string(),
+    width: z.number().positive(),
+    height: z.number().positive(),
+    type: z.literal("resize"),
+  }),
+  async execute({ publicId, width, height }) {
+    return {
+      url: `https://res.cloudinary.com/.../c_fill,w_${width},h_${height}/${publicId}`,
+      type: "cloudinaryUrl",
+    };
+  },
+});
+````
+
+### Frontend Chat
+
+* `Chat.tsx` manages threaded interactions, image uploads, and View Transitions.
+* `ChatMessages.tsx` and `ImageMessage.tsx` handle result rendering (with modal previews).
+* Claude returns either:
+
+  * Rich formatted content (`toolResults`)
+  * Direct transformation URLs (`cloudinaryUrl`)
+  * Tag data (`tagList`)
+
+---
+
+## 🔧 Tech Stack
+
+| Tech            | Role                                    |
+| --------------- | --------------------------------------- |
+| `Next.js 15`    | Fullstack framework (app router)        |
+| `Convex`        | Threading, action handling, persistence |
+| `Anthropic SDK` | Claude API interaction                  |
+| `Cloudinary`    | Media hosting + transformation API      |
+| `shadcn/ui`     | Component styling                       |
+| `Tailwind CSS`  | Layout and utility styling              |
+| `Sonner`        | Toast notifications                     |
+
+---
+
+## ⚙️ Setup Instructions
+
+1. **Clone the repo**
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/your-username/cloudi-agent.git
+cd cloudi-agent
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. **Install dependencies**
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+pnpm install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. **Add your `.env`**
 
-## Learn More
+```env
+# Convex
+CONVEX_DEPLOYMENT=dev:your-deployment
+NEXT_PUBLIC_CONVEX_URL=https://your-deployment.convex.cloud
 
-To learn more about Next.js, take a look at the following resources:
+# Cloudinary (client)
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your-cloud
+NEXT_PUBLIC_CLOUDINARY_API_KEY=your-key
+NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET=unsigned
+NEXT_PUBLIC_CLOUDINARY_FOLDER=ai-agent
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Cloudinary (server)
+CLOUDINARY_CLOUD_NAME=your-cloud
+CLOUDINARY_API_KEY=your-key
+CLOUDINARY_API_SECRET=your-secret
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Anthropic
+ANTHROPIC_API_KEY=sk-ant-...
+```
 
-## Deploy on Vercel
+4. **Run the dev server**
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```bash
+pnpm dev
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 🔍 Folder Structure
+
+```
+.
+├── convex/agent.ts              # AI agent setup with Cloudinary tools
+├── app/api/analyze/route.ts    # Claude endpoint for analyzing requests
+├── app/api/tags/route.ts       # Tag fetching and AWS Rekognition merge
+├── src/components/             # UI components
+│   ├── Chat.tsx
+│   ├── ChatMessages.tsx
+│   ├── chat-input.tsx
+│   ├── TagPills.tsx
+│   ├── image-message.tsx
+│   ├── demo-prompts.tsx
+├── src/types/chat.ts           # Unified message and tool type definitions
+├── src/utils/explanationTemplates.ts  # Claude-generated explanation snippets
+```
+
+---
+
+## 🧪 Example Claude Tool Call
+
+Claude may invoke:
+
+```json
+{
+  "tool_name": "generateFill",
+  "parameters": {
+    "publicId": "sample-image",
+    "prompt": "fill in the missing sky",
+    "width": 1080,
+    "height": 1080,
+    "type": "generateFill"
+  }
+}
+```
+
+→ Agent returns Cloudinary URL with applied `e_gen_fill` transformation.
+
+---
+
+## 📦 Deployment
+
+Deployed on **Vercel** (recommended) or **custom host**. Cloudinary and Convex credentials are injected securely via environment variables.
+
+---
+
+## 🔐 Security
+
+* No image data is stored permanently unless persisted intentionally
+* Server-side secrets (Cloudinary + Anthropic) are not exposed to the client
+* API input is validated using Zod schemas
+
+---
+
+## 📅 Roadmap
+
+* [ ] 🎨 Custom prompt templates
+* [ ] 🗂️ Upload from URL
+* [ ] 🧠 Claude fine-tuned model support
+* [ ] ✏️ Editable tags & history
+* [ ] 🧾 User sessions (auth + storage)
+
+---
+
+## 🧑‍💻 Author
+
+**Eugene Musebe**
+💡 Building accessible tools with AI, creative media, and open tech.
+
+---
+
+## 📜 License
+
+MIT License. Use freely. Attribution appreciated!
+
+---
+
+## 💬 Contribute
+
+PRs welcome. Issues encouraged. Ideas? Open a discussion.
+
+---
+
+## 🙌 Credits
+
+* [Cloudinary](https://cloudinary.com/)
+* [Anthropic](https://www.anthropic.com/)
+* [Convex](https://convex.dev/)
+* [Next.js](https://nextjs.org/)
+* [shadcn/ui](https://ui.shadcn.dev/)
+
+---
+
