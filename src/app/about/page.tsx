@@ -55,7 +55,7 @@ export default function AboutPage() {
         </p>
         <div className='mx-auto w-full max-w-xl overflow-hidden rounded-2xl shadow-lg'>
           <Image
-            src='/preview.png'
+            src='/demo.png'
             alt='Cloudi-Agent Demo Preview'
             width={1200}
             height={600}
